@@ -1,0 +1,19 @@
+# Documentation:
+# https://git-scm.com/docs/git-clone
+# https://docs.gitlab.com/ee/ci/variables/predefined_variables.html#predefined-variables-reference
+# https://docs.gitlab.com/ee/user/packages/container_registry/
+# https://docs.gitlab.com/ee/ci/large_repositories/
+
+# Setting repo variables
+variables:
+  REPO_TO_CLONE: "https://github.com/torvalds/linux.git"
+  CACHE_IMAGE_NAME: cloned_cached_repo_image
+  CACHE_FOLDER: linux_kernel_cache
+
+# Clonning using local cached folder as reference
+reference_cache_usage:
+    stage: build
+    image: $CI_REGISTRY/$CI_PROJECT_PATH/$CACHE_IMAGE_NAME:latest
+    script:
+        - ls /$CACHE_FOLDER
+        - git clone $REPO_TO_CLONE --reference /$CACHE_FOLDER

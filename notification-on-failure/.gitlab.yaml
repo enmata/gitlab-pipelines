@@ -1,0 +1,28 @@
+# Documentation:
+# https://api.slack.com/messaging/webhooks
+# https://docs.gitlab.com/ee/ci/variables/predefined_variables.html
+# https://docs.gitlab.com/ee/ci/yaml/#when
+
+# Setting custom slack channel URL
+variables:
+  SLACK_CHANNEL_URL: https://hooks.slack.com/services/YOUR/TOKENIZED/URL
+
+# Running job its gonna fail
+failing_job:
+  stage: build
+  script:
+      - exit 1
+
+# Job running only on failure
+notification_on_failure:
+  # Neets to be on a the final stage
+  stage: .post
+  script:
+    # Temporal env variable creation needed due yaml-brackets syntax restriction
+    - export FAILURE_TEXT="GitLab pipeline $CI_PROJECT_NAME failed in execution $CI_JOB_ID. Please check $CI_PIPELINE_URL"
+    - echo $FAILURE_TEXT
+    - 'export TEXT_HEATHER="{\"text\": $FAILURE_TEXT}"'
+    - 'export JSON_HEATHER="Content-Type: application/json"'
+    # Using curl to send notification to a Slack channel
+    - curl -X POST --header "$JSON_HEATHER" --data "$TEXT_HEATHER" $SLACK_CHANNEL_URL
+  when: on_failure

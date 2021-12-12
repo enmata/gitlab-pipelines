@@ -1,0 +1,16 @@
+# Documentation:
+# https://git-scm.com/docs/git-clone
+# https://docs.gitlab.com/ee/ci/variables/predefined_variables.html#predefined-variables-reference
+# https://docs.gitlab.com/ee/ci/large_repositories/
+# https://docs.gitlab.com/ee/ci/caching/
+
+# Setting swallow clone (depth 1) at GitLab project repo level
+variables:
+  GIT_STRATEGY: clone
+  GIT_DEPTH: 1
+
+# Setting swallow clone (depth 1) at job repo level
+git_swallow_clone:
+    stage: build
+    script:
+        - git clone --depth 1 "https://github.com/torvalds/linux.git"

@@ -1,0 +1,29 @@
+# Documentation:
+# https://docs.gitlab.com/ee/ci/pipelines/multi_project_pipelines.html
+# https://docs.gitlab.com/ee/ci/pipelines/parent_child_pipelines.html
+# https://docs.gitlab.com/ee/ci/variables/predefined_variables.html#predefined-variables-reference
+
+variables:
+  ENVIRONMENT_VAR_1: "Variable used for all child jobs number 1"
+  ENVIRONMENT_VAR_2: "Variable used for all child jobs number 2"
+
+display_message:
+    stage: build
+    script:
+        - echo "I am your father"
+
+trigger_proj1:
+  variables:
+    ENVIRONMENT_VAR_1: $ENVIRONMENT_VAR_1
+    ENVIRONMENT_VAR_2: $ENVIRONMENT_VAR_2
+    ENVIRONMENT_SPECIFIC: "something_project1_specific"
+  stage: deploy
+  trigger: $CI_PROJECT_ROOT_NAMESPACE/group1/proj1
+
+trigger_proj2:
+  variables:
+    ENVIRONMENT_VAR_1: $ENVIRONMENT_VAR_1
+    ENVIRONMENT_VAR_2: $ENVIRONMENT_VAR_2
+    ENVIRONMENT_SPECIFIC: "something_project2_specific"
+  stage: deploy
+  trigger: $CI_PROJECT_ROOT_NAMESPACE/group1/proj2

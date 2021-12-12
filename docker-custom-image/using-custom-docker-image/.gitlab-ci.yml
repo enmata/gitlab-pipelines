@@ -1,0 +1,14 @@
+# Documentation:
+# https://docs.gitlab.com/ee/ci/variables/predefined_variables.html#predefined-variables-reference
+# https://docs.gitlab.com/ee/user/packages/container_registry/
+
+# Setting repo variables
+variables:
+  CUSTOM_IMAGE_NAME: custom_docker_image
+
+# Running custom docker image
+reference_cache_usage:
+    stage: build
+    image: $CI_REGISTRY/$CI_PROJECT_PATH/$CUSTOM_IMAGE_NAME:latest
+    script:
+        - git --version

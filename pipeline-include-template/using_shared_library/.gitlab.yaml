@@ -1,0 +1,15 @@
+# Documentation:
+# https://docs.gitlab.com/ee/ci/yaml/#include
+# https://docs.gitlab.com/ee/ci/yaml/yaml_optimization.html
+# https://docs.gitlab.com/ee/ci/variables/predefined_variables.html#predefined-variables-reference
+
+include:
+  - project: '$CI_PROJECT_ROOT_NAMESPACE/shared-library'
+    file: '/common_commands.yml'
+
+using_shared_libs:
+    stage: build
+    before_script:
+      - !reference [ .common_commands, setup_kubectl ]
+    script:
+      - kubectl --help

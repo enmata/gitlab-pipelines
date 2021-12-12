@@ -1,0 +1,25 @@
+# Documentation
+# https://docs.gitlab.com/ee/ci/ssh_keys/
+# https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/
+
+.common_commands:
+  setup_git:
+    - yum update -y && yum install openssh-client git -y
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+    - git config --global user.name "Gitlab CI"
+    - git config --global user.email "noreply@gitlab.com"
+
+  setup_kubectl:
+    - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+    - chmod +x ./kubectl && mv ./kubectl /usr/local/bin/kubectl
+
+  publishDocker:
+    # Building the image
+    - docker build -f Dockerfile -t $CI_REGISTRY/$CI_PROJECT_PATH/$CACHE_IMAGE_NAME:latest .
+    # Pushing the image to GitLab Docker registry
+    - docker push $CI_REGISTRY/$CI_PROJECT_PATH/$CACHE_IMAGE_NAME:latest

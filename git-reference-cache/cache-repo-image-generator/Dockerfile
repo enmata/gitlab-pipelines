@@ -1,0 +1,6 @@
+FROM alpine:3.5
+RUN apk update
+RUN apk add git
+ENV CACHE_FOLDER {{CACHE_FOLDER}}
+ENV REPO_TO_CLONE {{REPO_TO_CLONE}}
+RUN git clone $REPO_TO_CLONE $CACHE_FOLDER

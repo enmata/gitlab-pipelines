@@ -1,0 +1,50 @@
+# Documentation:
+# https://docs.gitlab.com/ee/ci/yaml/artifacts_reports.html#artifactsreportsdotenv
+# https://docs.gitlab.com/ee/ci/variables/predefined_variables.html#predefined-variables-reference
+
+variables:
+  VARIABLES_FILE: variables.env
+
+stages:
+  - generate-vars
+  - consume-vars
+
+job-generating-vars-1:
+  stage: generate-vars
+  script:
+    - echo "FROM_JOB_11=try11" >> $VARIABLES_FILE
+    - echo "FROM_JOB_12=try12" >> $VARIABLES_FILE
+  artifacts:
+    reports:
+      dotenv: $VARIABLES_FILE
+
+job-generating-vars-2:
+  stage: generate-vars
+  script:
+    - echo "FROM_JOB_21=this is testing from job 2" >> $VARIABLES_FILE
+    - echo "FROM_JOB_22=Hello World" >> $VARIABLES_FILE
+  artifacts:
+    reports:
+      dotenv: $VARIABLES_FILE
+
+vars_output:
+  stage: consume-vars
+  script:
+    - echo $FROM_JOB_11
+    - echo $FROM_JOB_12
+    - echo $FROM_JOB_21
+    - echo $FROM_JOB_22
+  dependencies:
+    - job-generating-vars-1
+    - job-generating-vars-2
+
+.trigger_proj1:
+  stage: consume-vars
+  variables:
+    ENVIRONMENT_VAR_1: $FROM_JOB_11
+    ENVIRONMENT_VAR_2: $FROM_JOB_22
+    ENVIRONMENT_SPECIFIC: "something_project1_specific"
+  trigger: $CI_PROJECT_ROOT_NAMESPACE/group1/proj1
+  dependencies:
+    - job-generating-vars-1
+    - job-generating-vars-2

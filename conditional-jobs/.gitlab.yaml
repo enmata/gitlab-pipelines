@@ -1,0 +1,31 @@
+# Documentation:
+# https://docs.gitlab.com/ee/ci/variables/predefined_variables.html#predefined-variables-reference
+# https://docs.gitlab.com/ee/ci/yaml/#workflowrules
+# https://docs.gitlab.com/ee/ci/yaml/#when
+# https://docs.gitlab.com/ee/ci/jobs/index.html#hide-jobs
+
+masterOnlyJob:
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+  stage: deploy
+  script:
+    - echo "This jobs only runs on master branch"
+
+testingBranchJob:
+  rules:
+    - if: $CI_COMMIT_BRANCH != "master" && $CI_COMMIT_MESSAGE !~ /\[new-feature-release\].*/
+  stage: deploy
+  script:
+    - echo $CI_COMMIT_MESSAGE
+    - echo "This jobs only runs on non-master branches, and if commit message does not contain [new-feature-release] between brackets"
+
+manualDeploy:
+  stage: deploy
+  script:
+    - echo "This jobs only runs on manual push"
+  when: manual
+
+.disabledJob:
+  stage: deploy
+  script:
+    - echo "This job is disabled due dot before the name"
