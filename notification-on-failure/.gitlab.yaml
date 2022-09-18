@@ -3,26 +3,48 @@
 # https://docs.gitlab.com/ee/ci/variables/predefined_variables.html
 # https://docs.gitlab.com/ee/ci/yaml/#when
 
+.slack:
+  send_notification:
+    # Temporal env variable creation needed due yaml-brackets syntax restriction
+    - 'export TEXT_DATA="{\"channel\":\"$SLACK_DEFAULT_CHANNEL\",\"text\":\"$RESULT_TEXT\"}"'
+    - 'export JSON_HEATHER="Content-Type: application/json"'
+    - curl -X POST --header "$JSON_HEATHER" --data "$TEXT_DATA" $SLACK_CHANNEL_URL
+
 # Setting custom slack channel URL
 variables:
   SLACK_CHANNEL_URL: https://hooks.slack.com/services/YOUR/TOKENIZED/URL
 
-# Running job its gonna fail
+notification_on_start:
+  image: alpine/curl:3.14
+  script:
+    - export RESULT_TEXT="[ *$CI_PROJECT_NAME* ] $CI_JOB_STARTED_AT $ICON_INFO GitLab pipeline $CI_PROJECT_NAME *_STARTED_* by $GITLAB_USER_LOGIN\\n\\tRepository URL:\\t$REPO_URL\\n\\tBranch/Tag:\\t$CI_COMMIT_REF_NAME:$CI_COMMIT_TAG\\n\\tEnvironment:\\t$WHISBI_ENV\\n\\tCommit Author:\\t$CI_COMMIT_AUTHOR\\n\\tCommit Message:\\t$CI_COMMIT_MESSAGE\\n\\tPipeline URL:\\t$CI_PIPELINE_URL"
+    # Using curl to send notification to a Slack channel
+    - !reference [ .slack, send_notification ]
+
+# Running failing job
 failing_job:
   stage: build
   script:
       - exit 1
 
+# Job running only on success
+notification_on_success:
+  image: alpine/curl:3.14
+  script:
+    # Getting timestamp due this happens later than predefined $CI_JOB_STARTED_AT
+    - export TIME=$(date +"%Y-%m-%dT%H:%M:%SZ")
+    - export RESULT_TEXT="[ *$CI_PROJECT_NAME* ] $TIME $ICON_OK image pushed *_SUCCESSFULLY_* for $CI_PROJECT_NAME tagged as $DOCKER_REGISTRY/$SERVICE_ECR_REPO_NAME:$SERVICE_IMAGE_TAG"
+    - !reference [ .slack, send_notification ]
+  needs: [builder_branch]
+  when: on_success
+
 # Job running only on failure
 notification_on_failure:
-  # Neets to be on a the final stage
-  stage: .post
+  stage: deploy
+  image: alpine/curl:3.14
   script:
-    # Temporal env variable creation needed due yaml-brackets syntax restriction
-    - export FAILURE_TEXT="GitLab pipeline $CI_PROJECT_NAME failed in execution $CI_JOB_ID. Please check $CI_PIPELINE_URL"
-    - echo $FAILURE_TEXT
-    - 'export TEXT_HEATHER="{\"text\": $FAILURE_TEXT}"'
-    - 'export JSON_HEATHER="Content-Type: application/json"'
-    # Using curl to send notification to a Slack channel
-    - curl -X POST --header "$JSON_HEATHER" --data "$TEXT_HEATHER" $SLACK_CHANNEL_URL
+    # Getting timestamp due this happens later than predefined $CI_JOB_STARTED_AT
+    - export TIME=$(date +"%Y-%m-%dT%H:%M:%SZ")
+    - export RESULT_TEXT="[ *$CI_PROJECT_NAME* ] $TIME $ICON_FAIL Build *_FAILED_* for image $CI_PROJECT_NAME:$CI_COMMIT_TAG at $CI_PIPELINE_CREATED_AT started by $GITLAB_USER_LOGIN. Please check $CI_PIPELINE_URL"
+    - !reference [ .slack, send_notification ]
   when: on_failure

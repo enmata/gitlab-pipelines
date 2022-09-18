@@ -1,0 +1,73 @@
+# Documentation:
+# https://docs.gitlab.com/ee/ci/caching/
+# https://docs.gitlab.com/ee/ci/yaml/index.html#cachepolicy
+# https://docs.gitlab.com/runner/configuration/advanced-configuration.html#the-runners-section
+
+## Note 1: any file or folder outside default $CI_PROJECT_DIR folder, will not be cached
+## Note 2: using push policy to force a clear cache every pipeline execution
+## Note 3: Cache folder can be managed by $CACHE_DIR variable
+
+generating_cache_folders:
+  script:
+    # Sourcing code and caching into $CI_PROJECT_DIR/code_cache folder
+    - mkdir -p code_cache
+    - cd code_cache
+    - git clone --depth 1 "https://github.com/torvalds/linux.git"
+    - cd ..
+    # Downloading python dependencies and caching into $CI_PROJECT_DIR/python_cache folder
+    - mkdir -p python_cache
+    - cd python_cache
+    - echo "Running pip install folder" > requirements.txt
+    # pip install -r requirements.txt
+    - cd ..
+    # Storing coverage test results on $CI_PROJECT_DIR/coverage_cache folder
+    - mkdir coverage_cache
+    - cd coverage_cache
+    - echo "Results of coverage test" > lcov.info
+    # npm test --coverage
+  cache:
+    - key: code_cache
+      paths:
+        - code_cache
+      policy: push
+    - key: python_cache
+      paths:
+        - python_cache
+      policy: push
+    - key: coverage_cache
+      paths:
+        - coverage_cache
+      policy: push
+
+# Note: needs manual dependency is needed to force waiting for that cache folder
+using_python_cache:
+  script:
+    - ls -las python_cache
+  cache:
+    - key: python_cache
+      paths:
+        - python_cache
+      policy: pull
+  needs:
+    - generating_cache_folders
+
+using_all_cache_folder:
+  script:
+    - ls -las code_cache
+    - ls -las python_cache
+    - ls -las coverage_cache
+  cache:
+    - key: code_cache
+      paths:
+        - code_cache
+      policy: pull
+    - key: python_cache
+      paths:
+        - python_cache
+      policy: pull
+    - key: coverage_cache
+      paths:
+        - coverage_cache
+      policy: pull
+  needs:
+    - generating_cache_folders

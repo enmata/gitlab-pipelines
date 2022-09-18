@@ -1,0 +1,43 @@
+# Documentation:
+# https://docs.gitlab.com/ee/ci/yaml/#allow_failure
+
+# Setting eval variables
+variables:
+  ITEM_ARRAY: elem1 elem2 elem3
+
+bash_workaround:
+  image: alpine
+  script:
+    # Multiline scripts (if)
+    - |
+      exit 0
+      if [ $? -eq 0 ]; then
+        echo "---Last execution failed---"
+      else
+        echo "---Last execution went well---"
+      fi
+    # Multiline scripts (for)
+    - |
+      for ITEM in ${ITEM_ARRAY}
+      do
+        echo "Iterating ofer the item $ITEM"
+      done
+    # Expanding execution
+    - $(aws ecr get-login --no-include-email --region us-east-1) || true
+    # Brackets workaround (option 1)
+    - CURL_COMMAND="curl -X POST https://reqbin.com/echo/post/json -H 'Content-Type\: application/json' -d '{\"productId\": 123456, \"quantity\": 100}'"
+    - curl -X POST https://reqbin.com/echo/post/json --header 'Content-type: application/json' --data '{\"productId\"\: 123456, \"quantity\"\: 100}'
+    - notif="curl -X POST -H 'Authorization: Bearer $SLACK_ACCESS_TOKEN' -H 'Content-type: application/json' --data '{\"channel\":\"$SLACK_DEFAULT_CHANNEL\", \"text\":\"Tests passed for $GATEWAYAPI. Commit: $tag\"}' https://slack.com/api/chat.postMessage"
+    - eval $CURL_COMMAND
+    # Brackets workaround (option 2)
+    - 'export JSON_HEATHER="Content-Type: application/json"'
+    - 'export JSON_DATA="{\"productId\": 123456, \"quantity\": 100}'
+    - curl -X POST --header "$JSON_HEATHER" --data "$TEXT_DATA" https://reqbin.com/echo/post/json
+    # Filtering environment vars
+    - DOCKER_REGISTRY=$( env | grep "DOCKER_REGISTRY")
+    # Skipping exit code (bash)
+    - exit 1 || true
+    # Skipping exit code (GitLab)
+    - exit 10
+  allow_failure:
+    exit_codes: 10

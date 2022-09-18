@@ -1,0 +1,58 @@
+# Documentation:
+# https://docs.gitlab.com/ee/ci/variables/
+# https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
+# https://docs.gitlab.com/ee/ci/variables/predefined_variables.html
+
+include:
+  - 'vars_array.yaml'
+# Note: any predefined variable, can be overwritten just by redeclaring it with the new value on variables subsections
+
+# Job with predefined variables from service A - angular
+service_A_job:
+  variables:
+    SERVICE_NAME: serviceA
+  before_script:
+    - git clone --depth 1 http://github.com/example/$GIT_REPO_NAME.git
+  script:
+    - echo "--Sourcing $SERVICE_GIT_REPO_NAME--"
+    - echo "--Deploying $SERVICE_DEPLOY_CLUSTER--"
+    - echo "--As deploy name $SERVICE_DEPLOY_NAME--"
+    - echo "--Accessible from $SERVICE_URL--"
+
+# Job with predefined variables from service B - nodejs
+service_B_job:
+  variables:
+    SERVICE_NAME: serviceB
+  before_script:
+    - git clone --depth 1 http://github.com/example/$GIT_REPO_NAME.git
+  script:
+    - echo "--Sourcing $SERVICE_GIT_REPO_NAME--"
+    - echo "--Deploying $SERVICE_DEPLOY_CLUSTER--"
+    - echo "--As deploy name $SERVICE_DEPLOY_NAME--"
+    - echo "--Accessible from $SERVICE_URL--"
+
+# Job with predefined variables from service C - java
+service_C_job:
+  variables:
+    SERVICE_NAME: serviceC
+  before_script:
+    - git clone --depth 1 http://github.com/example/$GIT_REPO_NAME.git
+  script:
+    - echo "--Sourcing $SERVICE_GIT_REPO_NAME--"
+    - echo "--Deploying $SERVICE_DEPLOY_CLUSTER--"
+    - echo "--As deploy name $SERVICE_DEPLOY_NAME--"
+    - echo "--Accessible from $SERVICE_URL--"
+
+# Job with predefined and overritten variables from service C - java
+service_C_job_v2:
+  variables:
+    SERVICE_NAME: serviceC
+    SERVICE_DEPLOY_NAME: "this-value-is-new"
+    SERVICE_URL: "hacked-value"
+  before_script:
+    - git clone --depth 1 http://github.com/example/$GIT_REPO_NAME.git
+  script:
+    - echo "--Sourcing $SERVICE_GIT_REPO_NAME--"
+    - echo "--Deploying $SERVICE_DEPLOY_CLUSTER--"
+    - echo "--As deploy name $SERVICE_DEPLOY_NAME--"
+    - echo "--Accessible from $SERVICE_URL--"

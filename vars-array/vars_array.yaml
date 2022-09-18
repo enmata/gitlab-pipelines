@@ -1,0 +1,31 @@
+variables:
+  ####################################################
+  ##  Assigning predefined values for each service  ##
+  ####################################################
+  ## service a - angular based
+  serviceA_SERVICE_GIT_REPO_NAME: angular-service
+  serviceA_SERVICE_DEPLOY_CLUSTER: cluster1
+  serviceA_SERVICE_DEPLOY_NAME: servicea_deploy
+  serviceA_SERVICE_URL: angular-service.dummydomain.com
+
+  ## service b - nodejs based
+  serviceB_SERVICE_GIT_REPO_NAME: nodejs-service
+  serviceB_SERVICE_DEPLOY_CLUSTER: cluster1
+  serviceB_SERVICE_DEPLOY_NAME: serviceb_deploy
+  serviceB_SERVICE_URL: nodejs-service.dummydomain.com
+
+  ## service c - java based
+  serviceC_SERVICE_GIT_REPO_NAME: java-service
+  serviceC_SERVICE_DEPLOY_CLUSTER: cluster2
+  serviceC_SERVICE_DEPLOY_NAME: service3_deploy
+  serviceC_SERVICE_URL: java-service.dummydomain.com
+
+  ################################################
+  ##  Reading array values dynamic assignation  ##
+  ################################################
+  SERVICE_GIT_REPO_NAME: ${${SERVICE_NAME}_SERVICE_GIT_REPO_NAME}
+  SERVICE_DEPLOY_CLUSTER: ${${SERVICE_NAME}_SERVICE_DEPLOY_CLUSTER}
+  SERVICE_DEPLOY_NAME: ${${SERVICE_NAME}_SERVICE_DEPLOY_NAME}
+  SERVICE_URL: ${${SERVICE_NAME}_SERVICE_URL}
+
+
